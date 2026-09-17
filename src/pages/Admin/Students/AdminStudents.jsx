@@ -212,21 +212,22 @@ export function AdminStudents() {
       </div>
 
       {/* Filtros */}
-      <div className="card" style={{ padding: '1.25rem 1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* Filtros Fluidos */}
+      <div className="card" style={{ padding: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar por nome, matrícula ou e-mail..."
           className="form-control"
-          style={{ maxWidth: '320px' }}
+          style={{ maxWidth: '320px', flex: '1 1 220px' }}
         />
 
         <select
           value={selectedTurmaFilter}
           onChange={(e) => setSelectedTurmaFilter(e.target.value)}
           className="form-control"
-          style={{ maxWidth: '240px' }}
+          style={{ maxWidth: '240px', flex: '1 1 180px' }}
         >
           <option value="">Todas as turmas</option>
           {classes.map((t) => (
@@ -237,36 +238,29 @@ export function AdminStudents() {
         </select>
       </div>
 
-      {/* Tabela de Alunos */}
-      <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-              <th style={{ padding: '0.75rem 1rem' }}>Foto</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Nome do Aluno</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Matrícula</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Turma</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Fotos</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {studentsLoading || classesLoading ? (
-              Array.from({ length: 6 }).map((_, idx) => (
-                <SkeletonTableRow key={idx} columns={7} />
-              ))
-            ) : filteredStudents.map((aluno) => {
+      {/* Tabela / Cards de Alunos */}
+      <div className="card" style={{ padding: '1.25rem', width: '100%', boxSizing: 'border-box' }}>
+        {studentsLoading || classesLoading ? (
+          <Loading message="Carregando alunos..." />
+        ) : filteredStudents.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+            Nenhum aluno encontrado com os filtros atuais.
+          </p>
+        ) : (
+          <>
+            {/* Visualização em Cartões Mobile (Zero Scroll Lateral) */}
+            <div className="mobile-only mobile-card-list">
+              {filteredStudents.map((aluno) => {
                 const fotos = aluno.fotos || aluno.aluno_fotos || [];
                 const fotoPrincipal = fotos.find((f) => f.principal) || fotos[0];
                 const turma = classes.find((t) => t.id === aluno.turma_id);
 
                 return (
-                  <tr key={aluno.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
+                  <div key={aluno.id} className="mobile-data-card">
+                    <div style={{ display: 'flex', gap: '0.875rem', alignItems: 'center' }}>
                       <div style={{
-                        width: '44px',
-                        height: '44px',
+                        width: '48px',
+                        height: '48px',
                         borderRadius: 'var(--radius-md)',
                         overflow: 'hidden',
                         backgroundColor: '#f1f5f9',
@@ -284,64 +278,171 @@ export function AdminStudents() {
                           </div>
                         )}
                       </div>
-                    </td>
 
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--senai-blue-900)' }}>{aluno.nome}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{aluno.email || 'Sem e-mail'}</div>
-                    </td>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--senai-blue-900)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {aluno.nome}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Matrícula: <strong>{aluno.matricula}</strong>
+                        </div>
+                      </div>
 
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {aluno.matricula}
-                    </td>
+                      <div style={{ flexShrink: 0 }}>
+                        {aluno.ativo !== false ? (
+                          <span className="badge badge-green" style={{ fontSize: '0.65rem' }}>Ativo</span>
+                        ) : (
+                          <span className="badge badge-red" style={{ fontSize: '0.65rem' }}>Inativo</span>
+                        )}
+                      </div>
+                    </div>
 
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <span className="badge badge-blue">{turma?.nome || '—'}</span>
-                    </td>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                      <div>
+                        Turma: <span className="badge badge-blue">{turma?.nome || '—'}</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
+                      </div>
+                    </div>
 
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>
-                      {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
-                    </td>
-
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      {aluno.ativo !== false ? (
-                        <span className="badge badge-green">Ativo</span>
-                      ) : (
-                        <span className="badge badge-red">Inativo</span>
-                      )}
-                    </td>
-
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.375rem' }}>
+                    <div className="mobile-card-footer">
+                      <div style={{ display: 'flex', width: '100%', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button
                           onClick={() => setViewingStudent(aluno)}
-                          className="btn btn-secondary btn-sm btn-icon"
-                          title="Visualizar Perfil Completo"
+                          className="btn btn-secondary btn-sm"
+                          style={{ padding: '0.375rem 0.65rem' }}
                         >
-                          <Eye size={15} />
+                          <Eye size={14} />
+                          <span>Ver</span>
                         </button>
                         <button
                           onClick={() => handleOpenEdit(aluno)}
-                          className="btn btn-secondary btn-sm btn-icon"
-                          title="Editar Cadastro e Fotos"
+                          className="btn btn-secondary btn-sm"
+                          style={{ padding: '0.375rem 0.65rem' }}
                         >
-                          <Edit2 size={15} />
+                          <Edit2 size={14} />
+                          <span>Editar</span>
                         </button>
                         <button
                           onClick={() => setDeleteCandidate(aluno)}
-                          className="btn btn-ghost btn-sm btn-icon"
-                          style={{ color: 'var(--senai-red-600)' }}
-                          title="Desativar Aluno"
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--senai-red-600)', padding: '0.375rem 0.65rem' }}
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
+                          <span>Desativar</span>
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-          </tbody>
-        </table>
+            </div>
+
+            {/* Tabela Tradicional Desktop */}
+            <div className="desktop-only" style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '0.75rem 1rem' }}>Foto</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Nome do Aluno</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Matrícula</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Turma</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Fotos</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredStudents.map((aluno) => {
+                    const fotos = aluno.fotos || aluno.aluno_fotos || [];
+                    const fotoPrincipal = fotos.find((f) => f.principal) || fotos[0];
+                    const turma = classes.find((t) => t.id === aluno.turma_id);
+
+                    return (
+                      <tr key={aluno.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: 'var(--radius-md)',
+                            overflow: 'hidden',
+                            backgroundColor: '#f1f5f9',
+                            flexShrink: 0
+                          }}>
+                            {fotoPrincipal ? (
+                              <img
+                                src={fotoPrincipal.thumbnail || fotoPrincipal.arquivo}
+                                alt={aluno.nome}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                                <UserSquare2 size={24} />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontWeight: 700, color: 'var(--senai-blue-900)' }}>{aluno.nome}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{aluno.email || 'Sem e-mail'}</div>
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {aluno.matricula}
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <span className="badge badge-blue">{turma?.nome || '—'}</span>
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>
+                          {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          {aluno.ativo !== false ? (
+                            <span className="badge badge-green">Ativo</span>
+                          ) : (
+                            <span className="badge badge-red">Inativo</span>
+                          )}
+                        </td>
+
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.375rem' }}>
+                            <button
+                              onClick={() => setViewingStudent(aluno)}
+                              className="btn btn-secondary btn-sm btn-icon"
+                              title="Visualizar Perfil Completo"
+                            >
+                              <Eye size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleOpenEdit(aluno)}
+                              className="btn btn-secondary btn-sm btn-icon"
+                              title="Editar Cadastro e Fotos"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                            <button
+                              onClick={() => setDeleteCandidate(aluno)}
+                              className="btn btn-ghost btn-sm btn-icon"
+                              style={{ color: 'var(--senai-red-600)' }}
+                              title="Desativar Aluno"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modal Formulário de Aluno com Upload de Múltiplas Fotos */}

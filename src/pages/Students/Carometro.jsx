@@ -54,9 +54,9 @@ export function Carometro() {
   };
 
   return (
-    <div className="container" style={{ padding: '2rem 1.25rem 5rem' }}>
+    <div className="container" style={{ padding: 'clamp(1.25rem, 3vw, 2rem) 0.875rem 5rem', width: '100%', boxSizing: 'border-box' }}>
       {/* Navegação e Voltar */}
-      <div className="no-print" style={{ marginBottom: '1.25rem' }}>
+      <div className="no-print" style={{ marginBottom: '1rem' }}>
         <Link
           to={currentCourse ? `/curso/${currentCourse.id}` : '/'}
           style={{
@@ -74,46 +74,44 @@ export function Carometro() {
       </div>
 
       {/* Cabeçalho da Turma */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 'var(--radius-xl)',
-        padding: '1.75rem 2rem',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)',
-        marginBottom: '2rem',
+      <div className="card" style={{
+        padding: 'clamp(1rem, 3vw, 1.75rem)',
+        marginBottom: '1.5rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '1.25rem'
+        gap: '1rem',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
             <span className="badge badge-blue">{currentTurma?.nome || 'Turma'}</span>
             <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
               {currentTurma?.turno} • {currentTurma?.ano}/{currentTurma?.semestre}º Semestre
             </span>
           </div>
 
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--senai-blue-900)' }}>
+          <h1 style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', fontWeight: 800, color: 'var(--senai-blue-900)' }}>
             {currentCourse?.nome || 'Carômetro da Turma'}
           </h1>
         </div>
 
         {/* Estatísticas e Botão Imprimir */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
             backgroundColor: 'var(--senai-blue-50)',
             color: 'var(--senai-blue-800)',
-            padding: '0.5rem 1rem',
+            padding: '0.4rem 0.85rem',
             borderRadius: 'var(--radius-lg)',
             fontWeight: 700,
-            fontSize: '0.9375rem'
+            fontSize: '0.875rem'
           }}>
-            <Users size={18} />
+            <Users size={16} />
             <span>{processedStudents.length} {processedStudents.length === 1 ? 'Aluno' : 'Alunos'}</span>
           </div>
 
@@ -122,9 +120,10 @@ export function Carometro() {
             onClick={handlePrint}
             className="btn btn-secondary no-print"
             title="Imprimir Carômetro ou Salvar PDF"
+            style={{ padding: '0.4rem 0.85rem' }}
           >
             <Printer size={16} />
-            <span className="hide-mobile">Imprimir Carômetro</span>
+            <span className="desktop-only">Imprimir</span>
           </button>
         </div>
       </div>

@@ -47,9 +47,9 @@ export function CourseClasses() {
   }
 
   return (
-    <div className="container" style={{ padding: '2.5rem 1.25rem 4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1.25rem, 3vw, 2.5rem) 0.875rem 4rem', width: '100%', boxSizing: 'border-box' }}>
       {/* Botão Voltar & Migalha de pão */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.25rem' }}>
         <Link
           to="/"
           style={{
@@ -67,16 +67,14 @@ export function CourseClasses() {
       </div>
 
       {/* Cabeçalho do Curso */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 'var(--radius-xl)',
-        padding: '2rem',
-        border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow-sm)',
-        marginBottom: '2.5rem',
+      <div className="card" style={{
+        padding: 'clamp(1.25rem, 4vw, 2rem)',
+        marginBottom: '2rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.75rem'
+        gap: '0.75rem',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <span className="badge badge-blue">{currentCourse.sigla}</span>

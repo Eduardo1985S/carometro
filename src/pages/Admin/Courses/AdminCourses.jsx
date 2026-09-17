@@ -88,8 +88,9 @@ export function AdminCourses() {
       </div>
 
       {/* Tabela de Cursos */}
-      <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <div style={{ marginBottom: '1.25rem', maxWidth: '360px' }}>
+      {/* Tabela de Cursos */}
+      <div className="card" style={{ padding: '1.25rem', width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ marginBottom: '1.25rem', maxWidth: '360px', width: '100%' }}>
           <input
             type="text"
             value={searchTerm}
@@ -99,62 +100,126 @@ export function AdminCourses() {
           />
         </div>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-              <th style={{ padding: '0.75rem 1rem' }}>Sigla</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Nome do Curso</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Descrição</th>
-              <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              Array.from({ length: 4 }).map((_, idx) => (
-                <SkeletonTableRow key={idx} columns={5} />
-              ))
-            ) : filteredCourses.map((c) => (
-              <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '0.875rem 1rem' }}>
-                  <span className="badge badge-blue">{c.sigla}</span>
-                </td>
-                <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--senai-blue-900)' }}>
-                  {c.nome}
-                </td>
-                <td style={{ padding: '0.875rem 1rem', color: 'var(--text-secondary)', maxWidth: '300px' }}>
-                  {c.descricao || '—'}
-                </td>
-                <td style={{ padding: '0.875rem 1rem' }}>
-                  {c.ativo !== false ? (
-                    <span className="badge badge-green">Ativo</span>
-                  ) : (
-                    <span className="badge badge-red">Inativo</span>
-                  )}
-                </td>
-                <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
-                  <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => handleOpenEdit(c)}
-                      className="btn btn-secondary btn-sm btn-icon"
-                      title="Editar"
-                    >
-                      <Edit2 size={15} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteCandidate(c)}
-                      className="btn btn-ghost btn-sm btn-icon"
-                      style={{ color: 'var(--senai-red-600)' }}
-                      title="Desativar"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+        {loading ? (
+          <Loading message="Carregando cursos..." />
+        ) : filteredCourses.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+            Nenhum curso encontrado.
+          </p>
+        ) : (
+          <>
+            {/* Visualização em Cartões Mobile (Zero Scroll Lateral) */}
+            <div className="mobile-only mobile-card-list">
+              {filteredCourses.map((c) => (
+                <div key={c.id} className="mobile-data-card">
+                  <div className="mobile-card-header">
+                    <div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--senai-blue-900)' }}>
+                        {c.nome}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                      <span className="badge badge-blue">{c.sigla}</span>
+                      {c.ativo !== false ? (
+                        <span className="badge badge-green">Ativo</span>
+                      ) : (
+                        <span className="badge badge-red">Inativo</span>
+                      )}
+                    </div>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+                  {c.descricao && (
+                    <div className="mobile-card-body">
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                        {c.descricao}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mobile-card-footer">
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Sigla: <strong>{c.sigla}</strong>
+                    </span>
+                    <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleOpenEdit(c)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.375rem 0.65rem' }}
+                      >
+                        <Edit2 size={14} />
+                        <span>Editar</span>
+                      </button>
+                      <button
+                        onClick={() => setDeleteCandidate(c)}
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: 'var(--senai-red-600)', padding: '0.375rem 0.65rem' }}
+                      >
+                        <Trash2 size={14} />
+                        <span>Desativar</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabela Tradicional Desktop */}
+            <div className="desktop-only" style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '0.75rem 1rem' }}>Sigla</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Nome do Curso</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Descrição</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCourses.map((c) => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '0.875rem 1rem' }}>
+                        <span className="badge badge-blue">{c.sigla}</span>
+                      </td>
+                      <td style={{ padding: '0.875rem 1rem', fontWeight: 600, color: 'var(--senai-blue-900)' }}>
+                        {c.nome}
+                      </td>
+                      <td style={{ padding: '0.875rem 1rem', color: 'var(--text-secondary)', maxWidth: '300px' }}>
+                        {c.descricao || '—'}
+                      </td>
+                      <td style={{ padding: '0.875rem 1rem' }}>
+                        {c.ativo !== false ? (
+                          <span className="badge badge-green">Ativo</span>
+                        ) : (
+                          <span className="badge badge-red">Inativo</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                          <button
+                            onClick={() => handleOpenEdit(c)}
+                            className="btn btn-secondary btn-sm btn-icon"
+                            title="Editar"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteCandidate(c)}
+                            className="btn btn-ghost btn-sm btn-icon"
+                            style={{ color: 'var(--senai-red-600)' }}
+                            title="Desativar"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modal de Cadastro / Edição */}

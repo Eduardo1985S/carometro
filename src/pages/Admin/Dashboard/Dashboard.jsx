@@ -8,6 +8,7 @@ import {
   Image as ImageIcon, 
   PlusCircle, 
   ArrowRight, 
+  ArrowUpRight,
   Clock, 
   CheckCircle2, 
   Sparkles 
@@ -74,9 +75,9 @@ export function Dashboard() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="dashboard-wrapper">
       {/* Cabeçalho */}
-      <div>
+      <div className="dashboard-header">
         <h1 className="page-title">Painel Administrativo</h1>
         <p className="page-subtitle">
           Visão geral do sistema de carômetro e gerenciamento acadêmico
@@ -84,46 +85,35 @@ export function Dashboard() {
       </div>
 
       {/* Grid de Métricas Principais */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '1.25rem'
-      }}>
+      <div className="dashboard-stats-grid">
         {statCards.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <Link
               key={idx}
               to={stat.link}
-              className="card card-interactive"
-              style={{
-                padding: '1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1.25rem',
-                textDecoration: 'none'
-              }}
+              className="card card-interactive dashboard-stat-card"
+              title={`Ver ${stat.title}`}
             >
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: 'var(--radius-lg)',
-                backgroundColor: stat.bg,
-                color: stat.color,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <Icon size={28} />
+              <div className="dashboard-stat-header">
+                <div
+                  className="dashboard-stat-icon-box"
+                  style={{
+                    backgroundColor: stat.bg,
+                    color: stat.color
+                  }}
+                >
+                  <Icon size={24} />
+                </div>
+                <ArrowUpRight size={18} className="dashboard-stat-arrow" />
               </div>
 
-              <div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  {stat.title}
-                </div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--senai-blue-900)', lineHeight: 1.2 }}>
+              <div className="dashboard-stat-body">
+                <div className="dashboard-stat-value">
                   {stat.value}
+                </div>
+                <div className="dashboard-stat-title">
+                  {stat.title}
                 </div>
               </div>
             </Link>
@@ -132,37 +122,37 @@ export function Dashboard() {
       </div>
 
       {/* Ações Rápidas */}
-      <div className="card" style={{ padding: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--senai-blue-900)', marginBottom: '1rem' }}>
+      <div className="card dashboard-card-section">
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--senai-blue-900)', marginBottom: '0.875rem' }}>
           Ações Rápidas
         </h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div className="dashboard-quick-actions-grid">
           <Link to="/admin/alunos" className="btn btn-primary btn-sm">
-            <PlusCircle size={16} />
-            <span>Cadastrar Novo Aluno</span>
+            <PlusCircle size={15} />
+            <span>Novo Aluno</span>
           </Link>
           <Link to="/admin/turmas" className="btn btn-secondary btn-sm">
-            <PlusCircle size={16} />
+            <PlusCircle size={15} />
             <span>Nova Turma</span>
           </Link>
           <Link to="/admin/cursos" className="btn btn-secondary btn-sm">
-            <PlusCircle size={16} />
+            <PlusCircle size={15} />
             <span>Novo Curso</span>
           </Link>
           <Link to="/" className="btn btn-secondary btn-sm">
-            <ArrowRight size={16} />
-            <span>Visualizar Carômetro Público</span>
+            <ArrowRight size={15} />
+            <span>Carômetro Público</span>
           </Link>
         </div>
       </div>
 
       {/* Alunos Cadastrados Recentemente */}
-      <div className="card" style={{ padding: '1.5rem', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
+      <div className="card dashboard-card-section" style={{ overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
             Últimos Alunos Cadastrados
           </h2>
-          <Link to="/admin/alunos" style={{ fontSize: '0.875rem', color: 'var(--senai-blue-700)', fontWeight: 600 }}>
+          <Link to="/admin/alunos" style={{ fontSize: '0.8125rem', color: 'var(--senai-blue-700)', fontWeight: 600 }}>
             Ver todos
           </Link>
         </div>
@@ -170,23 +160,12 @@ export function Dashboard() {
         {stats.recentAlunos?.length === 0 ? (
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Nenhum aluno cadastrado recentemente.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="dashboard-recent-list">
             {stats.recentAlunos.map((aluno) => {
               const foto = aluno.fotos?.[0] || aluno.aluno_fotos?.[0];
               return (
-                <div
-                  key={aluno.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.75rem 1rem',
-                    backgroundColor: 'var(--bg-primary)',
-                    borderRadius: 'var(--radius-md)',
-                    gap: '1rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                <div key={aluno.id} className="dashboard-recent-item">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                     <div style={{
                       width: '40px',
                       height: '40px',
@@ -204,17 +183,37 @@ export function Dashboard() {
                       )}
                     </div>
 
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--senai-blue-900)' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        color: 'var(--senai-blue-900)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
                         {aluno.nome}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
                         Matrícula: {aluno.matricula} • {aluno.turmas?.nome || 'Sem turma'}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    flexShrink: 0
+                  }}>
                     <Clock size={12} />
                     <span>{formatarData(aluno.created_at)}</span>
                   </div>

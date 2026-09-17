@@ -100,8 +100,8 @@ export function AdminClasses() {
         </button>
       </div>
 
-      <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <div style={{ marginBottom: '1.25rem', maxWidth: '360px' }}>
+      <div className="card" style={{ padding: '1.25rem', width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ marginBottom: '1.25rem', maxWidth: '360px', width: '100%' }}>
           <input
             type="text"
             value={searchTerm}
@@ -113,66 +113,134 @@ export function AdminClasses() {
 
         {classesLoading || coursesLoading ? (
           <Loading message="Carregando turmas..." />
+        ) : filteredClasses.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+            Nenhuma turma encontrada.
+          </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                <th style={{ padding: '0.75rem 1rem' }}>Turma</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Curso</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Ano / Semestre</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Turno</th>
-                <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Visualização em Cartões para Dispositivos Móveis (Zero Scroll Lateral) */}
+            <div className="mobile-only mobile-card-list">
               {filteredClasses.map((t) => {
                 const curso = courses.find((c) => c.id === t.curso_id);
                 return (
-                  <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '0.875rem 1rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
-                      {t.nome}
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem', color: 'var(--text-primary)' }}>
-                      {curso ? `${curso.sigla} - ${curso.nome}` : '—'}
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem', color: 'var(--text-secondary)' }}>
-                      {t.ano} • {t.semestre}º Sem.
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem' }}>
-                      <span className="badge badge-blue">{t.turno}</span>
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem' }}>
-                      {t.ativa !== false ? (
-                        <span className="badge badge-green">Ativa</span>
-                      ) : (
-                        <span className="badge badge-red">Inativa</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
+                  <div key={t.id} className="mobile-data-card">
+                    <div className="mobile-card-header">
+                      <div>
+                        <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--senai-blue-900)' }}>
+                          {t.nome}
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                          {t.ano} • {t.semestre}º Semestre
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                        <span className="badge badge-blue">{t.turno}</span>
+                        {t.ativa !== false ? (
+                          <span className="badge badge-green">Ativa</span>
+                        ) : (
+                          <span className="badge badge-red">Inativa</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mobile-card-body">
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {curso ? `${curso.sigla} - ${curso.nome}` : '—'}
+                      </div>
+                    </div>
+
+                    <div className="mobile-card-footer">
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        Turno: <strong>{t.turno}</strong>
+                      </span>
                       <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
                         <button
                           onClick={() => handleOpenEdit(t)}
-                          className="btn btn-secondary btn-sm btn-icon"
-                          title="Editar"
+                          className="btn btn-secondary btn-sm"
+                          style={{ padding: '0.375rem 0.65rem' }}
                         >
-                          <Edit2 size={15} />
+                          <Edit2 size={14} />
+                          <span>Editar</span>
                         </button>
                         <button
                           onClick={() => setDeleteCandidate(t)}
-                          className="btn btn-ghost btn-sm btn-icon"
-                          style={{ color: 'var(--senai-red-600)' }}
-                          title="Desativar"
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--senai-red-600)', padding: '0.375rem 0.65rem' }}
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
+                          <span>Desativar</span>
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Tabela Tradicional para Desktop / Telas Médias e Grandes */}
+            <div className="desktop-only" style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '0.75rem 1rem' }}>Turma</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Curso</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Ano / Semestre</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Turno</th>
+                    <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClasses.map((t) => {
+                    const curso = courses.find((c) => c.id === t.curso_id);
+                    return (
+                      <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.875rem 1rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
+                          {t.nome}
+                        </td>
+                        <td style={{ padding: '0.875rem 1rem', color: 'var(--text-primary)' }}>
+                          {curso ? `${curso.sigla} - ${curso.nome}` : '—'}
+                        </td>
+                        <td style={{ padding: '0.875rem 1rem', color: 'var(--text-secondary)' }}>
+                          {t.ano} • {t.semestre}º Sem.
+                        </td>
+                        <td style={{ padding: '0.875rem 1rem' }}>
+                          <span className="badge badge-blue">{t.turno}</span>
+                        </td>
+                        <td style={{ padding: '0.875rem 1rem' }}>
+                          {t.ativa !== false ? (
+                            <span className="badge badge-green">Ativa</span>
+                          ) : (
+                            <span className="badge badge-red">Inativa</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '0.875rem 1rem', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                            <button
+                              onClick={() => handleOpenEdit(t)}
+                              className="btn btn-secondary btn-sm btn-icon"
+                              title="Editar"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                            <button
+                              onClick={() => setDeleteCandidate(t)}
+                              className="btn btn-ghost btn-sm btn-icon"
+                              style={{ color: 'var(--senai-red-600)' }}
+                              title="Desativar"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
