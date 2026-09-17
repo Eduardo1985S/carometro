@@ -376,6 +376,11 @@ button, input, select, textarea {
   border-color: var(--border-color);
 }
 
+/* Mobile Bottom TabBar */
+.mobile-tab-bar {
+  display: none;
+}
+
 /* Tipografia */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
@@ -718,7 +723,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .admin-main {
-    padding: 1rem 0.75rem;
+    padding: 1rem 0.75rem calc(68px + env(safe-area-inset-bottom, 12px));
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -729,6 +734,116 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     max-width: 100%;
     overflow-x: clip;
+  }
+
+  /* Mobile Bottom TabBar ("Cara de App") */
+  .mobile-tab-bar {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    align-items: stretch;
+    justify-content: space-around;
+    user-select: none;
+    box-sizing: border-box;
+  }
+
+  .mobile-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 0;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s ease, transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-tab-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .mobile-tab-icon {
+    stroke-width: 2.1;
+    transition: transform 0.2s ease, stroke 0.2s ease;
+  }
+
+  .mobile-tab-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    transition: color 0.2s ease;
+  }
+
+  /* Estado Ativo */
+  .mobile-tab-item.active {
+    color: var(--senai-blue-700);
+  }
+
+  .mobile-tab-item.active .mobile-tab-icon-wrapper {
+    transform: translateY(-2px);
+  }
+
+  .mobile-tab-item.active .mobile-tab-icon {
+    stroke: var(--senai-blue-700);
+    stroke-width: 2.5;
+  }
+
+  .mobile-tab-item.active .mobile-tab-label {
+    color: var(--senai-blue-700);
+    font-weight: 700;
+  }
+
+  /* Indicador ativo de bolinha sutil */
+  .mobile-tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 3px);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--senai-blue-600);
+  }
+
+  /* Badge para itens pendentes ou abertos na aba Mais */
+  .mobile-tab-badge {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--senai-red-600);
+    border: 1.5px solid #ffffff;
   }
 
   /* Dashboard Responsivo no Celular */
@@ -855,7 +970,7 @@ h1, h2, h3, h4, h5, h6 {
   body {
     background-color: #ffffff !important;
   }
-  .no-print, header, .admin-sidebar, .admin-mobile-bar, .btn, .filter-bar, .search-bar {
+  .no-print, header, .admin-sidebar, .admin-mobile-bar, .mobile-tab-bar, .btn, .filter-bar, .search-bar {
     display: none !important;
   }
   .carometro-grid {

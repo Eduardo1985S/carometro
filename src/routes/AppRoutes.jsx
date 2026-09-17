@@ -14,11 +14,10 @@ import { AdminUsers } from '../pages/Admin/Users/AdminUsers';
 
 import { ProtectedRoute } from '../components/ProtectedRoute/ProtectedRoute';
 import { Sidebar } from '../components/Sidebar/Sidebar';
-import { Menu } from 'lucide-react';
+import { MobileTabBar } from '../components/MobileTabBar/MobileTabBar';
 
 function AdminLayoutWrapper({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
 
   React.useEffect(() => {
     const handleToggle = () => setMobileMenuOpen((prev) => !prev);
@@ -26,34 +25,8 @@ function AdminLayoutWrapper({ children }) {
     return () => window.removeEventListener('toggle-admin-sidebar', handleToggle);
   }, []);
 
-  const getPageName = () => {
-    if (location.pathname.includes('/cursos')) return 'Cursos';
-    if (location.pathname.includes('/turmas')) return 'Turmas';
-    if (location.pathname.includes('/alunos')) return 'Alunos';
-    if (location.pathname.includes('/fotos')) return 'Galeria de Fotos';
-    if (location.pathname.includes('/usuarios')) return 'Usuários';
-    return 'Painel Geral';
-  };
-
   return (
     <div className="admin-layout">
-      {/* Barra superior de navegação exclusiva para Mobile no Admin */}
-      <div className="admin-mobile-bar show-mobile">
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="btn btn-secondary btn-sm"
-          style={{ padding: '0.25rem 0.6rem', fontSize: '0.8125rem', gap: '0.35rem' }}
-          title="Abrir Menu de Navegação"
-        >
-          <Menu size={16} />
-          <span>Menu Admin</span>
-        </button>
-
-        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
-          {getPageName()}
-        </span>
-      </div>
-
       <Sidebar
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
@@ -64,6 +37,9 @@ function AdminLayoutWrapper({ children }) {
           {children}
         </div>
       </main>
+
+      {/* TabBar Inferior Mobile estilo App Nativo */}
+      <MobileTabBar onOpenMenu={() => setMobileMenuOpen(true)} />
     </div>
   );
 }
