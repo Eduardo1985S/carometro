@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Home } from '../pages/Home/Home';
 import { CourseClasses } from '../pages/Courses/CourseClasses';
 import { Carometro } from '../pages/Students/Carometro';
@@ -14,13 +14,47 @@ import { AdminUsers } from '../pages/Admin/Users/AdminUsers';
 
 import { ProtectedRoute } from '../components/ProtectedRoute/ProtectedRoute';
 import { Sidebar } from '../components/Sidebar/Sidebar';
+import { Menu } from 'lucide-react';
 
 function AdminLayoutWrapper({ children }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const getPageName = () => {
+    if (location.pathname.includes('/cursos')) return 'Cursos';
+    if (location.pathname.includes('/turmas')) return 'Turmas';
+    if (location.pathname.includes('/alunos')) return 'Alunos';
+    if (location.pathname.includes('/fotos')) return 'Galeria de Fotos';
+    if (location.pathname.includes('/usuarios')) return 'Usuários';
+    return 'Painel Geral';
+  };
+
   return (
     <div className="admin-layout">
-      <Sidebar />
+      {/* Barra superior de navegação exclusiva para Mobile no Admin */}
+      <div className="admin-mobile-bar show-mobile">
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="btn btn-secondary btn-sm"
+          style={{ padding: '0.4rem 0.65rem' }}
+          title="Abrir Menu de Navegação"
+        >
+          <Menu size={18} />
+          <span>Menu Admin</span>
+        </button>
+
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--senai-blue-900)' }}>
+          {getPageName()}
+        </span>
+      </div>
+
+      <Sidebar
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
+
       <main className="admin-main">
-        <div className="container" style={{ maxWidth: '1200px' }}>
+        <div className="admin-content-container">
           {children}
         </div>
       </main>
