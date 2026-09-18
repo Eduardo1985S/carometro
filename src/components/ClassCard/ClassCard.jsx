@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Clock, Calendar, ArrowRight } from 'lucide-react';
+import { Users, Clock, Calendar, ArrowRight, MapPin } from 'lucide-react';
 
 export function ClassCard({ turma, alunosCount = 0 }) {
+  const unidade = turma.unidade || 'Valinhos';
+
   return (
     <Link
       to={`/turma/${turma.id}`}
@@ -20,9 +22,26 @@ export function ClassCard({ turma, alunosCount = 0 }) {
         <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--senai-blue-900)' }}>
           {turma.nome}
         </h3>
-        <span className="badge badge-blue">
-          {turma.turno}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+          <span
+            className="badge"
+            style={{
+              backgroundColor: unidade === 'Vinhedo' ? '#ede9fe' : 'var(--senai-blue-50)',
+              color: unidade === 'Vinhedo' ? '#5b21b6' : 'var(--senai-blue-800)',
+              fontWeight: 600,
+              fontSize: '0.75rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.2rem'
+            }}
+          >
+            <MapPin size={11} />
+            {unidade}
+          </span>
+          <span className="badge badge-blue">
+            {turma.turno}
+          </span>
+        </div>
       </div>
 
       <div style={{

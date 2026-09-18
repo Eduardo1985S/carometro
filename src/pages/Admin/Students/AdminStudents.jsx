@@ -232,7 +232,7 @@ export function AdminStudents() {
           <option value="">Todas as turmas</option>
           {classes.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.nome} ({t.turno})
+              {t.nome} — SENAI {t.unidade || 'Valinhos'} ({t.turno})
             </option>
           ))}
         </select>
@@ -300,6 +300,9 @@ export function AdminStudents() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                       <div>
                         Turma: <span className="badge badge-blue">{turma?.nome || '—'}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.35rem' }}>
+                          ({turma?.unidade || 'Valinhos'})
+                        </span>
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
@@ -394,7 +397,12 @@ export function AdminStudents() {
                         </td>
 
                         <td style={{ padding: '0.75rem 1rem' }}>
-                          <span className="badge badge-blue">{turma?.nome || '—'}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <span className="badge badge-blue">{turma?.nome || '—'}</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              SENAI {turma?.unidade || 'Valinhos'}
+                            </span>
+                          </div>
                         </td>
 
                         <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>
@@ -499,7 +507,7 @@ export function AdminStudents() {
                     <option value="" disabled>Selecione a turma</option>
                     {classes.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.nome} ({t.turno})
+                        {t.nome} — SENAI {t.unidade || 'Valinhos'} ({t.turno})
                       </option>
                     ))}
                   </select>

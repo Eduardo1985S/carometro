@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.turmas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     curso_id UUID NOT NULL REFERENCES public.cursos(id) ON DELETE RESTRICT,
     nome VARCHAR(100) NOT NULL,
+    unidade VARCHAR(50) NOT NULL DEFAULT 'Valinhos' CHECK (unidade IN ('Valinhos', 'Vinhedo')),
     ano INTEGER NOT NULL,
     semestre INTEGER NOT NULL CHECK (semestre IN (1, 2)),
     turno VARCHAR(50) NOT NULL CHECK (turno IN ('Manhã', 'Tarde', 'Noite', 'Integral')),
@@ -82,6 +83,7 @@ SELECT
     a.nome,
     a.turma_id,
     t.nome AS turma,
+    t.unidade,
     t.turno,
     t.ano,
     t.semestre,
@@ -105,7 +107,7 @@ JOIN public.turmas t ON a.turma_id = t.id
 JOIN public.cursos c ON t.curso_id = c.id
 LEFT JOIN public.aluno_fotos f ON a.id = f.aluno_id
 WHERE a.ativo = true AND t.ativa = true AND c.ativo = true
-GROUP BY a.id, a.nome, a.turma_id, t.nome, t.turno, t.ano, t.semestre, c.id, c.nome, c.sigla;
+GROUP BY a.id, a.nome, a.turma_id, t.nome, t.unidade, t.turno, t.ano, t.semestre, c.id, c.nome, c.sigla;
 
 -- ==============================================================================
 -- 8. ROW LEVEL SECURITY (RLS)
@@ -204,19 +206,12 @@ TO authenticated
 USING (bucket_id = 'alunos');
 
 -- ==============================================================================
--- 10. DADOS INICIAIS DE DEMONSTRAÇÃO (SEED)
+-- 10. DADOS INICIAIS — 4 CURSOS TÉCNICOS OFICIAIS
 -- ==============================================================================
 INSERT INTO public.cursos (id, nome, sigla, descricao, ativo) VALUES
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Técnico em Desenvolvimento de Sistemas', 'TDS', 'Formação técnica voltada à criação de aplicações web, mobile e sistemas corporativos.', true),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Técnico em Mecatrônica', 'MEC', 'Integração de mecânica de precisão, eletrônica e controle computacional.', true),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Técnico em Eletrotécnica', 'ELE', 'Projetos elétricos industriais e residenciais, automação e eficiência energética.', true),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Técnico em Automação Industrial', 'AUT', 'Implementação e manutenção de robôs industriais e controladores lógicos.', true)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.turmas (id, curso_id, nome, ano, semestre, turno, ativa) VALUES
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '1TDS1', 2026, 1, 'Manhã', true),
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '1TDS2', 2026, 1, 'Tarde', true),
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b13', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', '2TDS1', 2026, 2, 'Manhã', true),
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b14', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', '1MEC1', 2026, 1, 'Integral', true),
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380b15', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', '2ELE1', 2026, 2, 'Noite', true)
-ON CONFLICT (id) DO NOTHING;
+('c0000001-0000-0000-0000-000000000001', 'Técnico em Mecânica', 'MEC', 'Formação técnica abrangendo usinagem mecânica, manutenção industrial, projetos de máquinas e processos de manufatura.', true),
+('c0000002-0000-0000-0000-000000000002', 'Técnico em Desenvolvimento de Sistemas', 'DS', 'Formação voltada ao desenvolvimento de software, aplicações web, mobile, lógica algorítmica e gestão de bancos de dados.', true),
+('c0000003-0000-0000-0000-000000000003', 'Técnico em Eletroeletrônica', 'ELE', 'Projetos e manutenção de circuitos elétricos e eletrônicos, automação de comandos e equipamentos industriais.', true),
+('c0000004-0000-0000-0000-000000000004', 'Técnico em Administração', 'ADM', 'Capacitação em processos administrativos, gestão de suprimentos, recursos humanos, finanças e suporte a decisões corporativas.', true)
+ON CONFLICT (id) DO UPDATE
+SET nome = EXCLUDED.nome, sigla = EXCLUDED.sigla, descricao = EXCLUDED.descricao, ativo = true;

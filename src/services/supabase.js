@@ -38,8 +38,8 @@ export const api = {
     return data;
   },
   async saveTurma(turma) {
-    const payload = { nome: turma.nome, curso_id: turma.curso_id, ano: Number(turma.ano), semestre: Number(turma.semestre), turno: turma.turno, ativa: turma.ativa !== false, updated_at: new Date().toISOString() };
     const client = requireSupabase();
+    const payload = { nome: turma.nome, curso_id: turma.curso_id, unidade: turma.unidade || 'Valinhos', ano: Number(turma.ano), semestre: Number(turma.semestre), turno: turma.turno, ativa: turma.ativa !== false, updated_at: new Date().toISOString() };
     const query = turma.id ? client.from('turmas').update(payload).eq('id', turma.id) : client.from('turmas').insert(payload);
     const { data, error } = await query.select().single();
     if (error) throw error;

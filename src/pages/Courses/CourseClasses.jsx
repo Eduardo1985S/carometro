@@ -7,7 +7,7 @@ import { ClassCard } from '../../components/ClassCard/ClassCard';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { Loading } from '../../components/Loading/Loading';
 import { EmptyState } from '../../components/EmptyState/EmptyState';
-import { ChevronLeft, GraduationCap, Users } from 'lucide-react';
+import { ChevronLeft, GraduationCap, Users, MapPin } from 'lucide-react';
 
 export function CourseClasses() {
   const { cursoId } = useParams();
@@ -15,6 +15,7 @@ export function CourseClasses() {
   const { classes, loading: classesLoading } = useClasses(cursoId);
   const { students } = useStudents({ isAdmin: false });
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('Todas'); // 'Todas' | 'Valinhos' | 'Vinhedo'
 
   const currentCourse = courses.find((c) => c.id === cursoId);
 
@@ -22,11 +23,17 @@ export function CourseClasses() {
 
   const filteredClasses = activeClasses.filter((turma) => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       turma.nome.toLowerCase().includes(term) ||
       turma.turno.toLowerCase().includes(term) ||
-      String(turma.ano).includes(term)
-    );
+      (turma.unidade && turma.unidade.toLowerCase().includes(term)) ||
+      String(turma.ano).includes(term);
+
+    const matchesUnit =
+      selectedUnit === 'Todas' ||
+      (turma.unidade || 'Valinhos') === selectedUnit;
+
+    return matchesSearch && matchesUnit;
   });
 
   if (coursesLoading || classesLoading) {
@@ -112,11 +119,50 @@ export function CourseClasses() {
           </p>
         </div>
 
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Buscar turma (ex: 1TDS1, Manhã)..."
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Filtro de Unidades */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '0.25rem',
+            borderRadius: 'var(--radius-lg)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setSelectedUnit('Todas')}
+              className={`btn btn-sm ${selectedUnit === 'Todas' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ fontSize: '0.8125rem', padding: '0.35rem 0.65rem' }}
+            >
+              Todas
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedUnit('Valinhos')}
+              className={`btn btn-sm ${selectedUnit === 'Valinhos' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ fontSize: '0.8125rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+            >
+              <MapPin size={12} />
+              Valinhos
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedUnit('Vinhedo')}
+              className={`btn btn-sm ${selectedUnit === 'Vinhedo' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ fontSize: '0.8125rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+            >
+              <MapPin size={12} />
+              Vinhedo
+            </button>
+          </div>
+
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar turma..."
+          />
+        </div>
       </div>
 
       {/* Grid de Turmas */}
