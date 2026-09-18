@@ -54,3 +54,11 @@ INSERT INTO public.cursos (id, nome, sigla, descricao, ativo) VALUES
 ('c0000004-0000-0000-0000-000000000004', 'Técnico em Administração', 'ADM', 'Capacitação em processos administrativos, gestão de suprimentos, recursos humanos, finanças e suporte a decisões corporativas.', true)
 ON CONFLICT (id) DO UPDATE 
 SET nome = EXCLUDED.nome, sigla = EXCLUDED.sigla, descricao = EXCLUDED.descricao, ativo = true;
+
+-- 5. Inserção de Turmas Iniciais Padrão para os Cursos
+INSERT INTO public.turmas (id, curso_id, nome, unidade, ano, semestre, turno, ativa) VALUES
+('t0000001-0000-0000-0000-000000000001', 'c0000002-0000-0000-0000-000000000002', '1DS1', 'Valinhos', 2026, 1, 'Manhã', true),
+('t0000002-0000-0000-0000-000000000002', 'c0000001-0000-0000-0000-000000000001', '1MEC1', 'Valinhos', 2026, 1, 'Manhã', true),
+('t0000003-0000-0000-0000-000000000003', 'c0000003-0000-0000-0000-000000000003', '1ELE1', 'Valinhos', 2026, 1, 'Noite', true),
+('t0000004-0000-0000-0000-000000000004', 'c0000004-0000-0000-0000-000000000004', '1ADM1', 'Valinhos', 2026, 1, 'Tarde', true)
+ON CONFLICT (id) DO NOTHING;

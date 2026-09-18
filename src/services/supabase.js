@@ -19,15 +19,18 @@ export const supabase = isSupabaseConfigured
 // STORAGE LOCAL / MOCK FALLBACK
 // ============================================================================
 const STORAGE_KEYS = {
-  CURSOS: 'senai_carometro_cursos_v2',
-  TURMAS: 'senai_carometro_turmas_v2',
-  ALUNOS: 'senai_carometro_alunos_v2',
-  USERS: 'senai_carometro_users_v2'
+  CURSOS: 'senai_carometro_cursos_v3',
+  TURMAS: 'senai_carometro_turmas_v3',
+  ALUNOS: 'senai_carometro_alunos_v3',
+  USERS: 'senai_carometro_users_v3'
 };
 
-// Limpa caches antigos da versão com dados mockados
+// Limpa caches antigos de versões anteriores
 try {
-  ['senai_carometro_cursos', 'senai_carometro_turmas', 'senai_carometro_alunos', 'senai_carometro_users'].forEach(k => {
+  [
+    'senai_carometro_cursos', 'senai_carometro_turmas', 'senai_carometro_alunos', 'senai_carometro_users',
+    'senai_carometro_cursos_v2', 'senai_carometro_turmas_v2', 'senai_carometro_alunos_v2', 'senai_carometro_users_v2'
+  ].forEach(k => {
     if (localStorage.getItem(k)) localStorage.removeItem(k);
   });
 } catch (e) {}
@@ -39,7 +42,13 @@ function getLocalData(key, initialData) {
       localStorage.setItem(key, JSON.stringify(initialData));
       return initialData;
     }
-    return JSON.parse(item);
+    const parsed = JSON.parse(item);
+    // Se estiver vazio mas houver dados iniciais recomendados (como cursos ou turmas), inicializa com initialData
+    if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(initialData) && initialData.length > 0) {
+      localStorage.setItem(key, JSON.stringify(initialData));
+      return initialData;
+    }
+    return parsed;
   } catch (e) {
     return initialData;
   }

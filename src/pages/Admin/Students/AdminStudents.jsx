@@ -17,12 +17,16 @@ import {
   Check, 
   ArrowUp, 
   ArrowDown, 
-  Sparkles 
+  Sparkles,
+  Camera,
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 import { Loading } from '../../../components/Loading/Loading';
 import { SkeletonTableRow } from '../../../components/Loading/SkeletonCard';
 import { ConfirmModal } from '../../../components/ConfirmModal/ConfirmModal';
 import { StudentModal } from '../../../components/StudentModal/StudentModal';
+import { CameraCaptureModal } from '../../../components/CameraCapture/CameraCaptureModal';
 import { formatarData, calcularIdade } from '../../../utils/calculateAge';
 
 export function AdminStudents() {
@@ -38,6 +42,19 @@ export function AdminStudents() {
   const [deleteCandidate, setDeleteCandidate] = useState(null);
   const [saving, setSaving] = useState(false);
   const [compressing, setCompressing] = useState(false);
+
+  // Estados para Câmera e Criação Rápida de Turma
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [isQuickClassModalOpen, setIsQuickClassModalOpen] = useState(false);
+  const [quickClassData, setQuickClassData] = useState({
+    curso_id: '',
+    unidade: 'Valinhos',
+    turno: 'Manhã',
+    ano: new Date().getFullYear(),
+    semestre: 1,
+    nome: ''
+  });
+  const [savingQuickClass, setSavingQuickClass] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -160,14 +177,82 @@ export function AdminStudents() {
     setFormData((prev) => ({ ...prev, fotos: updated }));
   };
 
-  const handleMovePhoto = (fromIdx, toIdx) => {
-    if (toIdx < 0 || toIdx >= formData.fotos.length) return;
-    const updated = [...formData.fotos];
-    const item = updated.splice(fromIdx, 1)[0];
-    updated.splice(toIdx, 0, item);
-    // Recalcular ordens
-    updated.forEach((f, idx) => { f.ordem = idx + 1; });
-    setFormData((prev) => ({ ...prev, fotos: updated }));
+  // Captura via Câmera / Webcam
+  const handleCameraCapture = async (file) => {
+    setCompressing(true);
+    try {
+      const { perfilFile, thumbFile } = await processarFotoAluno(file);
+      const pathPerfil = `${Date.now()}_camera.webp`;
+      const pathThumb = `${Date.now()}_camera_thumb.webp`;
+
+      const finalPerfilUrl = await api.uploadFotoStorage(perfilFile, pathPerfil);
+      const finalThumbUrl = await api.uploadFotoStorage(thumbFile, pathThumb);
+
+      const isFirst = formData.fotos.length === 0;
+      const newFoto = {
+        id: `f_temp_${Date.now()}_${Math.random()}`,
+        arquivo: finalPerfilUrl,
+        thumbnail: finalThumbUrl,
+        principal: isFirst,
+        ordem: formData.fotos.length + 1
+      };
+
+      setFormData((prev) => ({ ...prev, fotos: [...prev.fotos, newFoto] }));
+    } catch (err) {
+      console.error('Erro ao processar foto da câmera:', err);
+      alert('Erro ao salvar foto da câmera: ' + err.message);
+    } finally {
+      setCompressing(false);
+    }
+  };
+
+  // Abrir Modal de Criação Rápida de Turma
+  const handleOpenQuickClass = () => {
+    const defaultCursoId = courses[0]?.id || '';
+    const sigla = courses[0]?.sigla || 'DS';
+    const count = classes.filter((t) => t.curso_id === defaultCursoId).length + 1;
+
+    setQuickClassData({
+      curso_id: defaultCursoId,
+      unidade: 'Valinhos',
+      turno: 'Manhã',
+      ano: new Date().getFullYear(),
+      semestre: 1,
+      nome: `1${sigla}${count}`
+    });
+    setIsQuickClassModalOpen(true);
+  };
+
+  const handleQuickClassCourseChange = (novoCursoId) => {
+    const curso = courses.find((c) => c.id === novoCursoId);
+    const sigla = curso?.sigla || 'TURMA';
+    const count = classes.filter((t) => t.curso_id === novoCursoId).length + 1;
+
+    setQuickClassData((prev) => ({
+      ...prev,
+      curso_id: novoCursoId,
+      nome: `${prev.semestre || 1}${sigla}${count}`
+    }));
+  };
+
+  const handleSaveQuickClass = async (e) => {
+    e.preventDefault();
+    setSavingQuickClass(true);
+    try {
+      const saved = await saveClass({
+        ...quickClassData,
+        ativa: true
+      });
+      setIsQuickClassModalOpen(false);
+      // Seleciona automaticamente a turma criada no formulário do aluno
+      if (saved && saved.id) {
+        setFormData((prev) => ({ ...prev, turma_id: saved.id }));
+      }
+    } catch (err) {
+      alert('Erro ao criar turma rápida: ' + err.message);
+    } finally {
+      setSavingQuickClass(false);
+    }
   };
 
   const handleSave = async (e) => {
@@ -497,20 +582,71 @@ export function AdminStudents() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Turma *</label>
-                  <select
-                    required
-                    value={formData.turma_id}
-                    onChange={(e) => setFormData({ ...formData, turma_id: e.target.value })}
-                    className="form-control"
-                  >
-                    <option value="" disabled>Selecione a turma</option>
-                    {classes.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.nome} — SENAI {t.unidade || 'Valinhos'} ({t.turno})
-                      </option>
-                    ))}
-                  </select>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <label className="form-label" style={{ marginBottom: 0 }}>Turma *</label>
+                    <button
+                      type="button"
+                      onClick={handleOpenQuickClass}
+                      className="btn btn-ghost btn-sm"
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.2rem 0.5rem',
+                        color: 'var(--senai-blue-700)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                      title="Cadastrar uma turma rapidamente sem sair desta tela"
+                    >
+                      <Plus size={13} />
+                      <span>+ Nova Turma</span>
+                    </button>
+                  </div>
+
+                  {classes.length === 0 ? (
+                    <div style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#fffbeb',
+                      border: '1px solid #fde68a',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.8125rem',
+                      color: '#92400e',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+                        <span>Nenhuma turma cadastrada.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleOpenQuickClass}
+                        className="btn btn-primary btn-sm"
+                        style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                      >
+                        + Criar Turma
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      required
+                      value={formData.turma_id}
+                      onChange={(e) => setFormData({ ...formData, turma_id: e.target.value })}
+                      className="form-control"
+                    >
+                      <option value="" disabled>Selecione a turma</option>
+                      {classes.map((t) => {
+                        const curso = courses.find((c) => c.id === t.curso_id);
+                        return (
+                          <option key={t.id} value={t.id}>
+                            {t.nome} {curso ? `(${curso.sigla})` : ''} — SENAI {t.unidade || 'Valinhos'} ({t.turno})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -575,23 +711,43 @@ export function AdminStudents() {
                     </div>
                   </div>
 
-                  <label className="btn btn-secondary btn-sm" style={{ cursor: compressing ? 'not-allowed' : 'pointer' }}>
-                    <Upload size={15} />
-                    <span>{compressing ? 'Comprimindo...' : '+ Adicionar Fotos'}</span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {/* Botão Câmera */}
+                    <button
+                      type="button"
+                      onClick={() => setIsCameraModalOpen(true)}
                       disabled={compressing}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                      className="btn btn-primary btn-sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
+                      title="Tirar foto usando a câmera do computador ou celular"
+                    >
+                      <Camera size={15} />
+                      <span>Tirar Foto</span>
+                    </button>
+
+                    {/* Botão Galeria */}
+                    <label
+                      className="btn btn-secondary btn-sm"
+                      style={{ cursor: compressing ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
+                      title="Escolher arquivos da galeria ou computador"
+                    >
+                      <Upload size={15} />
+                      <span>{compressing ? 'Comprimindo...' : 'Galeria / Arquivo'}</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        disabled={compressing}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {formData.fotos.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    Nenhuma foto adicionada ainda. Clique em "+ Adicionar Fotos" acima.
+                    Nenhuma foto adicionada ainda. Use "Tirar Foto" com a câmera ou escolha fotos da galeria.
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
@@ -694,6 +850,146 @@ export function AdminStudents() {
                 </button>
                 <button type="submit" disabled={saving || compressing} className="btn btn-primary">
                   {saving ? 'Salvando...' : 'Salvar Aluno'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Captura via Câmera */}
+      <CameraCaptureModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onCapture={handleCameraCapture}
+      />
+
+      {/* Modal de Criação Rápida de Turma */}
+      {isQuickClassModalOpen && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setIsQuickClassModalOpen(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <h4 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--senai-blue-900)', margin: 0 }}>
+                Cadastrar Turma Rápida
+              </h4>
+              <button onClick={() => setIsQuickClassModalOpen(false)} className="btn-icon btn-ghost">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveQuickClass}>
+              <div className="form-group">
+                <label className="form-label">Unidade SENAI *</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                    padding: '0.625rem',
+                    borderRadius: 'var(--radius-md)',
+                    border: quickClassData.unidade === 'Valinhos' ? '2px solid var(--senai-blue-600)' : '1px solid var(--border-color)',
+                    backgroundColor: quickClassData.unidade === 'Valinhos' ? 'var(--senai-blue-50)' : '#ffffff',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600
+                  }}>
+                    <input
+                      type="radio"
+                      name="quick_unidade"
+                      value="Valinhos"
+                      checked={quickClassData.unidade === 'Valinhos'}
+                      onChange={(e) => setQuickClassData({ ...quickClassData, unidade: e.target.value })}
+                    />
+                    <span>Valinhos</span>
+                  </label>
+
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.375rem',
+                    padding: '0.625rem',
+                    borderRadius: 'var(--radius-md)',
+                    border: quickClassData.unidade === 'Vinhedo' ? '2px solid #6366f1' : '1px solid var(--border-color)',
+                    backgroundColor: quickClassData.unidade === 'Vinhedo' ? '#ede9fe' : '#ffffff',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600
+                  }}>
+                    <input
+                      type="radio"
+                      name="quick_unidade"
+                      value="Vinhedo"
+                      checked={quickClassData.unidade === 'Vinhedo'}
+                      onChange={(e) => setQuickClassData({ ...quickClassData, unidade: e.target.value })}
+                    />
+                    <span>Vinhedo</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Curso Técnico *</label>
+                <select
+                  required
+                  value={quickClassData.curso_id}
+                  onChange={(e) => handleQuickClassCourseChange(e.target.value)}
+                  className="form-control"
+                >
+                  <option value="" disabled>Selecione o curso</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.sigla} - {c.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Nome da Turma *</label>
+                <input
+                  type="text"
+                  required
+                  value={quickClassData.nome}
+                  onChange={(e) => setQuickClassData({ ...quickClassData, nome: e.target.value.toUpperCase() })}
+                  placeholder="Ex: 1DS1, 1MEC1..."
+                  className="form-control"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Semestre *</label>
+                  <select
+                    value={quickClassData.semestre}
+                    onChange={(e) => setQuickClassData({ ...quickClassData, semestre: parseInt(e.target.value, 10) })}
+                    className="form-control"
+                  >
+                    <option value={1}>1º Semestre</option>
+                    <option value={2}>2º Semestre</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Turno *</label>
+                  <select
+                    value={quickClassData.turno}
+                    onChange={(e) => setQuickClassData({ ...quickClassData, turno: e.target.value })}
+                    className="form-control"
+                  >
+                    <option value="Manhã">Manhã</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noite">Noite</option>
+                    <option value="Integral">Integral</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.25rem' }}>
+                <button type="button" onClick={() => setIsQuickClassModalOpen(false)} className="btn btn-secondary">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={savingQuickClass} className="btn btn-primary">
+                  {savingQuickClass ? 'Salvando...' : 'Criar e Selecionar'}
                 </button>
               </div>
             </form>

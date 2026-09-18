@@ -37,10 +37,55 @@ export const INITIAL_CURSOS = [
   }
 ];
 
-// Turmas vazias por padrão (gerenciadas via Supabase ou cadastro local)
-export const INITIAL_TURMAS = [];
+// Turmas iniciais padronizadas para cada um dos 4 cursos técnicos oficiais
+export const INITIAL_TURMAS = [
+  {
+    id: 't_ds_1',
+    curso_id: 'c2',
+    nome: '1DS1',
+    unidade: 'Valinhos',
+    ano: 2026,
+    semestre: 1,
+    turno: 'Manhã',
+    ativa: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 't_mec_1',
+    curso_id: 'c1',
+    nome: '1MEC1',
+    unidade: 'Valinhos',
+    ano: 2026,
+    semestre: 1,
+    turno: 'Manhã',
+    ativa: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 't_ele_1',
+    curso_id: 'c3',
+    nome: '1ELE1',
+    unidade: 'Valinhos',
+    ano: 2026,
+    semestre: 1,
+    turno: 'Noite',
+    ativa: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 't_adm_1',
+    curso_id: 'c4',
+    nome: '1ADM1',
+    unidade: 'Valinhos',
+    ano: 2026,
+    semestre: 1,
+    turno: 'Tarde',
+    ativa: true,
+    created_at: new Date().toISOString()
+  }
+];
 
-// Alunos vazios por padrão (gerenciados via Supabase ou cadastro local)
+// Alunos vazios por padrão (cadastrados pelo usuário)
 export const INITIAL_ALUNOS = [];
 
 // Usuários administrativos padrão para testes/demo
