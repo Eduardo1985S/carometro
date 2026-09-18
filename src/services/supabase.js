@@ -19,11 +19,18 @@ export const supabase = isSupabaseConfigured
 // STORAGE LOCAL / MOCK FALLBACK
 // ============================================================================
 const STORAGE_KEYS = {
-  CURSOS: 'senai_carometro_cursos',
-  TURMAS: 'senai_carometro_turmas',
-  ALUNOS: 'senai_carometro_alunos',
-  USERS: 'senai_carometro_users'
+  CURSOS: 'senai_carometro_cursos_v2',
+  TURMAS: 'senai_carometro_turmas_v2',
+  ALUNOS: 'senai_carometro_alunos_v2',
+  USERS: 'senai_carometro_users_v2'
 };
+
+// Limpa caches antigos da versão com dados mockados
+try {
+  ['senai_carometro_cursos', 'senai_carometro_turmas', 'senai_carometro_alunos', 'senai_carometro_users'].forEach(k => {
+    if (localStorage.getItem(k)) localStorage.removeItem(k);
+  });
+} catch (e) {}
 
 function getLocalData(key, initialData) {
   try {
@@ -146,6 +153,7 @@ export const api = {
       const c = cursos.find(item => item.id === t.curso_id);
       return {
         ...t,
+        unidade: t.unidade || 'Valinhos',
         cursos: c ? { nome: c.nome, sigla: c.sigla } : null
       };
     });
@@ -164,6 +172,7 @@ export const api = {
           .update({
             nome: turma.nome,
             curso_id: turma.curso_id,
+            unidade: turma.unidade || 'Valinhos',
             ano: parseInt(turma.ano, 10),
             semestre: parseInt(turma.semestre, 10),
             turno: turma.turno,
@@ -181,6 +190,7 @@ export const api = {
           .insert([{
             nome: turma.nome,
             curso_id: turma.curso_id,
+            unidade: turma.unidade || 'Valinhos',
             ano: parseInt(turma.ano, 10),
             semestre: parseInt(turma.semestre, 10),
             turno: turma.turno,
@@ -197,12 +207,13 @@ export const api = {
     if (turma.id) {
       const idx = turmas.findIndex(t => t.id === turma.id);
       if (idx !== -1) {
-        turmas[idx] = { ...turmas[idx], ...turma };
+        turmas[idx] = { ...turmas[idx], ...turma, unidade: turma.unidade || 'Valinhos' };
       }
     } else {
       const newTurma = {
         ...turma,
         id: 't_' + Date.now(),
+        unidade: turma.unidade || 'Valinhos',
         ano: parseInt(turma.ano, 10),
         semestre: parseInt(turma.semestre, 10),
         ativa: turma.ativa !== false,

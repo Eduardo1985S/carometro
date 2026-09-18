@@ -8,7 +8,7 @@ import { StudentModal } from '../../components/StudentModal/StudentModal';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { SkeletonCard } from '../../components/Loading/SkeletonCard';
 import { EmptyState } from '../../components/EmptyState/EmptyState';
-import { ChevronLeft, ArrowDownAZ, ArrowUpZA, Printer, Users, UserX, Sparkles } from 'lucide-react';
+import { ChevronLeft, ArrowDownAZ, ArrowUpZA, Printer, Users, UserX, Sparkles, MapPin } from 'lucide-react';
 
 export function Carometro() {
   const { turmaId } = useParams();
@@ -88,6 +88,20 @@ export function Carometro() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
             <span className="badge badge-blue">{currentTurma?.nome || 'Turma'}</span>
+            <span
+              className="badge"
+              style={{
+                backgroundColor: currentTurma?.unidade === 'Vinhedo' ? '#ede9fe' : 'var(--senai-blue-50)',
+                color: currentTurma?.unidade === 'Vinhedo' ? '#5b21b6' : 'var(--senai-blue-800)',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}
+            >
+              <MapPin size={12} />
+              {currentTurma?.unidade || 'Valinhos'}
+            </span>
             <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
               {currentTurma?.turno} • {currentTurma?.ano}/{currentTurma?.semestre}º Semestre
             </span>
