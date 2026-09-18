@@ -62,8 +62,18 @@ export const api = {
   },
   async saveAluno(aluno) {
     const client = requireSupabase();
-    const { fotos = [], id, ...fields } = aluno;
-    const payload = { ...fields, data_nascimento: fields.data_nascimento || null, updated_at: new Date().toISOString() };
+    const { fotos = [], id, turma_id, nome, matricula, data_nascimento, email, telefone, observacao, ativo } = aluno;
+    const payload = {
+      turma_id,
+      nome,
+      matricula,
+      data_nascimento: data_nascimento || null,
+      email: email || null,
+      telefone: telefone || null,
+      observacao: observacao || null,
+      ativo: ativo !== false,
+      updated_at: new Date().toISOString()
+    };
     const query = id ? client.from('alunos').update(payload).eq('id', id) : client.from('alunos').insert(payload);
     const { data, error } = await query.select().single();
     if (error) throw error;
