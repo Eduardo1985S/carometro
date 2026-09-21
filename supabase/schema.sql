@@ -2,8 +2,9 @@
 -- CARÔMETRO DIGITAL SENAI — ESQUEMA COMPLETO DO BANCO DE DADOS (SUPABASE POSTGRES)
 -- ==============================================================================
 
--- 1. Habilitar UUID
+-- 1. Habilitar UUID e Criptografia
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- 2. Tabela de Perfis de Usuários (Profiles)
 CREATE TABLE IF NOT EXISTS public.profiles (
