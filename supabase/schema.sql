@@ -16,6 +16,29 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Trigger para criar perfil de Admin automaticamente ao criar qualquer usuário no Supabase Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, nome, email, role, ativo)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'nome', split_part(NEW.email, '@', 1)),
+    NEW.email,
+    'admin',
+    true
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET email = EXCLUDED.email, role = 'admin', ativo = true;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
 -- 3. Tabela de Cursos
 CREATE TABLE IF NOT EXISTS public.cursos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
