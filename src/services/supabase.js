@@ -82,10 +82,19 @@ export const api = {
 
   async saveCurso(curso) {
     if (isSupabaseConfigured) {
-      if (curso.id && !curso.id.startsWith('c_temp_')) {
+      const isRealUuid = typeof curso.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(curso.id);
+
+      const payload = {
+        nome: curso.nome?.trim(),
+        sigla: curso.sigla?.trim()?.toUpperCase(),
+        descricao: curso.descricao?.trim() || null,
+        ativo: curso.ativo !== false
+      };
+
+      if (isRealUuid) {
         const { data, error } = await supabase
           .from('cursos')
-          .update({ nome: curso.nome, sigla: curso.sigla, descricao: curso.descricao, ativo: curso.ativo, updated_at: new Date() })
+          .update({ ...payload, updated_at: new Date().toISOString() })
           .eq('id', curso.id)
           .select()
           .single();
@@ -94,7 +103,7 @@ export const api = {
       } else {
         const { data, error } = await supabase
           .from('cursos')
-          .insert([{ nome: curso.nome, sigla: curso.sigla, descricao: curso.descricao, ativo: curso.ativo !== false }])
+          .insert([payload])
           .select()
           .single();
         if (error) throw error;
@@ -175,19 +184,22 @@ export const api = {
 
   async saveTurma(turma) {
     if (isSupabaseConfigured) {
-      if (turma.id && !turma.id.startsWith('t_temp_')) {
+      const isRealUuid = typeof turma.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(turma.id);
+
+      const payload = {
+        nome: turma.nome?.trim(),
+        curso_id: turma.curso_id,
+        unidade: turma.unidade || 'Valinhos',
+        ano: parseInt(turma.ano, 10) || new Date().getFullYear(),
+        semestre: parseInt(turma.semestre, 10) || 1,
+        turno: turma.turno || 'Manhã',
+        ativa: turma.ativa !== false
+      };
+
+      if (isRealUuid) {
         const { data, error } = await supabase
           .from('turmas')
-          .update({
-            nome: turma.nome,
-            curso_id: turma.curso_id,
-            unidade: turma.unidade || 'Valinhos',
-            ano: parseInt(turma.ano, 10),
-            semestre: parseInt(turma.semestre, 10),
-            turno: turma.turno,
-            ativa: turma.ativa,
-            updated_at: new Date()
-          })
+          .update({ ...payload, updated_at: new Date().toISOString() })
           .eq('id', turma.id)
           .select()
           .single();
@@ -196,15 +208,7 @@ export const api = {
       } else {
         const { data, error } = await supabase
           .from('turmas')
-          .insert([{
-            nome: turma.nome,
-            curso_id: turma.curso_id,
-            unidade: turma.unidade || 'Valinhos',
-            ano: parseInt(turma.ano, 10),
-            semestre: parseInt(turma.semestre, 10),
-            turno: turma.turno,
-            ativa: turma.ativa !== false
-          }])
+          .insert([payload])
           .select()
           .single();
         if (error) throw error;
@@ -344,13 +348,26 @@ export const api = {
 
   async saveAluno(alunoData) {
     if (isSupabaseConfigured) {
-      const { fotos, ...alunoFields } = alunoData;
+      const { fotos, turmas, curso, curso_sigla, aluno_fotos, ...alunoFields } = alunoData;
       let savedAluno;
 
-      if (alunoFields.id && !alunoFields.id.startsWith('a_temp_')) {
+      const isRealUuid = typeof alunoFields.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(alunoFields.id);
+
+      const payload = {
+        nome: alunoFields.nome?.trim(),
+        matricula: alunoFields.matricula?.trim(),
+        turma_id: alunoFields.turma_id,
+        data_nascimento: alunoFields.data_nascimento ? alunoFields.data_nascimento.substring(0, 10) : '2000-01-01',
+        email: alunoFields.email?.trim() || null,
+        telefone: alunoFields.telefone?.trim() || null,
+        observacao: alunoFields.observacao?.trim() || null,
+        ativo: alunoFields.ativo !== false
+      };
+
+      if (isRealUuid) {
         const { data, error } = await supabase
           .from('alunos')
-          .update({ ...alunoFields, updated_at: new Date() })
+          .update({ ...payload, updated_at: new Date().toISOString() })
           .eq('id', alunoFields.id)
           .select()
           .single();
@@ -359,7 +376,7 @@ export const api = {
       } else {
         const { data, error } = await supabase
           .from('alunos')
-          .insert([alunoFields])
+          .insert([payload])
           .select()
           .single();
         if (error) throw error;
@@ -367,9 +384,10 @@ export const api = {
       }
 
       // Sincronizar fotos
-      if (fotos && fotos.length > 0) {
+      if (fotos && fotos.length > 0 && savedAluno?.id) {
         for (const [idx, foto] of fotos.entries()) {
-          if (!foto.id || foto.id.startsWith('f_temp_')) {
+          const isFotoUuid = typeof foto.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(foto.id);
+          if (!isFotoUuid) {
             const { error: fotoError } = await supabase.from('aluno_fotos').insert([{
               aluno_id: savedAluno.id,
               arquivo: foto.arquivo,
@@ -377,13 +395,13 @@ export const api = {
               principal: Boolean(foto.principal),
               ordem: foto.ordem || (idx + 1)
             }]);
-            if (fotoError) throw fotoError;
+            if (fotoError) console.warn('Erro ao salvar foto:', fotoError);
           } else {
             const { error: fotoError } = await supabase.from('aluno_fotos').update({
               principal: Boolean(foto.principal),
               ordem: foto.ordem || (idx + 1)
             }).eq('id', foto.id);
-            if (fotoError) throw fotoError;
+            if (fotoError) console.warn('Erro ao atualizar foto:', fotoError);
           }
         }
       }
