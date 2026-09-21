@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { INITIAL_CURSOS, INITIAL_TURMAS, INITIAL_ALUNOS, INITIAL_USERS } from './mockData';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
@@ -370,18 +370,20 @@ export const api = {
       if (fotos && fotos.length > 0) {
         for (const [idx, foto] of fotos.entries()) {
           if (!foto.id || foto.id.startsWith('f_temp_')) {
-            await supabase.from('aluno_fotos').insert([{
+            const { error: fotoError } = await supabase.from('aluno_fotos').insert([{
               aluno_id: savedAluno.id,
               arquivo: foto.arquivo,
               thumbnail: foto.thumbnail || foto.arquivo,
               principal: Boolean(foto.principal),
               ordem: foto.ordem || (idx + 1)
             }]);
+            if (fotoError) throw fotoError;
           } else {
-            await supabase.from('aluno_fotos').update({
+            const { error: fotoError } = await supabase.from('aluno_fotos').update({
               principal: Boolean(foto.principal),
               ordem: foto.ordem || (idx + 1)
             }).eq('id', foto.id);
+            if (fotoError) throw fotoError;
           }
         }
       }
