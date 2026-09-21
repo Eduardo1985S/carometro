@@ -119,6 +119,7 @@ ALTER TABLE public.alunos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.aluno_fotos ENABLE ROW LEVEL SECURITY;
 
 -- Regras para Perfis (Admin acessa tudo, usuário acessa próprio perfil)
+DROP POLICY IF EXISTS "Admins podem visualizar todos os perfis" ON public.profiles;
 CREATE POLICY "Admins podem visualizar todos os perfis" 
 ON public.profiles FOR SELECT 
 TO authenticated 
@@ -127,6 +128,7 @@ USING (
     OR auth.uid() = id
 );
 
+DROP POLICY IF EXISTS "Admins podem gerenciar perfis" ON public.profiles;
 CREATE POLICY "Admins podem gerenciar perfis" 
 ON public.profiles FOR ALL 
 TO authenticated 
@@ -135,11 +137,13 @@ USING (
 );
 
 -- Regras para Cursos (Público apenas leitura de ativos; Admin gerencia)
+DROP POLICY IF EXISTS "Cursos ativos visíveis publicamente" ON public.cursos;
 CREATE POLICY "Cursos ativos visíveis publicamente" 
 ON public.cursos FOR SELECT 
 TO anon, authenticated 
 USING (ativo = true);
 
+DROP POLICY IF EXISTS "Admins gerenciam cursos" ON public.cursos;
 CREATE POLICY "Admins gerenciam cursos" 
 ON public.cursos FOR ALL 
 TO authenticated 
@@ -148,11 +152,13 @@ USING (
 );
 
 -- Regras para Turmas (Público apenas leitura de ativas; Admin gerencia)
+DROP POLICY IF EXISTS "Turmas ativas visíveis publicamente" ON public.turmas;
 CREATE POLICY "Turmas ativas visíveis publicamente" 
 ON public.turmas FOR SELECT 
 TO anon, authenticated 
 USING (ativa = true);
 
+DROP POLICY IF EXISTS "Admins gerenciam turmas" ON public.turmas;
 CREATE POLICY "Admins gerenciam turmas" 
 ON public.turmas FOR ALL 
 TO authenticated 
@@ -161,6 +167,7 @@ USING (
 );
 
 -- Regras para Alunos (Público NÃO lê tabela direta de alunos; apenas Admin)
+DROP POLICY IF EXISTS "Admins gerenciam alunos" ON public.alunos;
 CREATE POLICY "Admins gerenciam alunos" 
 ON public.alunos FOR ALL 
 TO authenticated 
@@ -169,11 +176,13 @@ USING (
 );
 
 -- Regras para Fotos (Público lê fotos de alunos ativos; Admin gerencia)
+DROP POLICY IF EXISTS "Fotos visíveis publicamente" ON public.aluno_fotos;
 CREATE POLICY "Fotos visíveis publicamente" 
 ON public.aluno_fotos FOR SELECT 
 TO anon, authenticated 
 USING (true);
 
+DROP POLICY IF EXISTS "Admins gerenciam fotos" ON public.aluno_fotos;
 CREATE POLICY "Admins gerenciam fotos" 
 ON public.aluno_fotos FOR ALL 
 TO authenticated 
@@ -190,16 +199,19 @@ VALUES ('alunos', 'alunos', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Políticas de acesso ao Storage 'alunos'
+DROP POLICY IF EXISTS "Imagens de alunos publicamente acessíveis" ON storage.objects;
 CREATE POLICY "Imagens de alunos publicamente acessíveis"
 ON storage.objects FOR SELECT
 TO anon, authenticated
 USING (bucket_id = 'alunos');
 
+DROP POLICY IF EXISTS "Apenas admins autenticados podem fazer upload de fotos" ON storage.objects;
 CREATE POLICY "Apenas admins autenticados podem fazer upload de fotos"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'alunos');
 
+DROP POLICY IF EXISTS "Apenas admins autenticados podem atualizar ou excluir fotos" ON storage.objects;
 CREATE POLICY "Apenas admins autenticados podem atualizar ou excluir fotos"
 ON storage.objects FOR ALL
 TO authenticated
