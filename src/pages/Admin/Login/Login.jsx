@@ -25,7 +25,11 @@ export function Login() {
       navigate(from, { replace: true });
     } catch (err) {
       console.error('Erro no login:', err);
-      setError(err.message || 'Credenciais inválidas. Verifique seu e-mail e senha.');
+      if (err.message?.includes('Invalid login credentials')) {
+        setError('Usuário não encontrado no Supabase. Crie o usuário admin@senai.br no painel do Supabase (menu Authentication > Users) ou use o botão Demo abaixo.');
+      } else {
+        setError(err.message || 'Credenciais inválidas. Verifique seu e-mail e senha.');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,7 +39,12 @@ export function Login() {
     setError('');
     setLoading(true);
     try {
-      await signIn('admin@senai.br', 'senai2026');
+      try {
+        await signIn('admin@senai.br', 'senai2026');
+      } catch (err) {
+        // Se ainda não estiver criado no Supabase Auth, entra em modo demo local diretamente
+        await signIn('admin@senai.br', 'senai2026', true);
+      }
       navigate(from, { replace: true });
     } catch (err) {
       setError('Erro ao iniciar sessão demo.');

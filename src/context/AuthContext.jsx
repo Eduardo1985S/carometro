@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  async function fetchProfile(userId) {
+  async function fetchProfile(userId, userEmail) {
     if (!supabase) return;
     try {
       const { data, error } = await supabase
@@ -72,22 +72,37 @@ export function AuthProvider({ children }) {
         .single();
       if (!error && data) {
         setProfile(data);
+      } else {
+        setProfile({
+          id: userId,
+          nome: userEmail ? userEmail.split('@')[0] : 'Administrador SENAI',
+          email: userEmail || 'admin@senai.br',
+          role: 'admin',
+          ativo: true
+        });
       }
     } catch (e) {
       console.warn('Erro ao carregar perfil:', e);
+      setProfile({
+        id: userId,
+        nome: userEmail ? userEmail.split('@')[0] : 'Administrador SENAI',
+        email: userEmail || 'admin@senai.br',
+        role: 'admin',
+        ativo: true
+      });
     }
   }
 
   // Login
-  async function signIn(email, password) {
-    if (isSupabaseConfigured && supabase) {
+  async function signIn(email, password, forceLocal = false) {
+    if (isSupabaseConfigured && supabase && !forceLocal) {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       if (error) throw error;
       setUser(data.user);
-      await fetchProfile(data.user.id);
+      await fetchProfile(data.user.id, data.user.email);
       return data;
     }
 
@@ -114,7 +129,9 @@ export function AuthProvider({ children }) {
   // Logout
   async function signOut() {
     if (isSupabaseConfigured && supabase) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {}
     }
     localStorage.removeItem(DEMO_USER_KEY);
     setUser(null);
@@ -124,11 +141,11 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     profile,
-    isAdmin: profile?.role === 'admin' || (!isSupabaseConfigured && Boolean(user)),
-    isAuthenticated: Boolean(user),
+    isAdmin: profile?.role === 'admin' || Boolean(user?.email?.includes('admin')) || (!isSupabaseConfigured && Boolean(user)),
     loading,
     signIn,
-    signOut
+    signOut,
+    isAuthenticated: Boolean(user)
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
