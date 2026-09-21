@@ -31,7 +31,7 @@ import { formatarData, calcularIdade } from '../../../utils/calculateAge';
 
 export function AdminStudents() {
   const { students, loading: studentsLoading, saveStudent, deleteStudent } = useStudents({ isAdmin: true });
-  const { classes, loading: classesLoading } = useClasses();
+  const { classes, loading: classesLoading, saveClass } = useClasses();
   const { courses } = useCourses();
 
   const [searchTerm, setSearchTerm] = useState('');
