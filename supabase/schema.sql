@@ -260,3 +260,44 @@ INSERT INTO public.turmas (id, curso_id, nome, unidade, ano, semestre, turno, at
 ('t0000004-0000-0000-0000-000000000004', 'c0000004-0000-0000-0000-000000000004', '1ADM1', 'Valinhos', 2026, 1, 'Tarde', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- ==============================================================================
+-- 12. USUÁRIO ADMINISTRADOR PADRÃO (admin@senai.br / senai2026)
+-- ==============================================================================
+DO $$
+DECLARE
+  v_user_id UUID := 'a0000000-0000-0000-0000-000000000001';
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@senai.br') THEN
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      v_user_id,
+      'authenticated',
+      'authenticated',
+      'admin@senai.br',
+      crypt('senai2026', gen_salt('bf')),
+      now(),
+      '{"provider":"email","providers":["email"]}',
+      '{"nome":"Administrador SENAI"}',
+      now(),
+      now()
+    );
+
+    -- Garante o perfil administrativo correspondente
+    INSERT INTO public.profiles (id, nome, email, role, ativo)
+    VALUES (v_user_id, 'Administrador SENAI', 'admin@senai.br', 'admin', true)
+    ON CONFLICT (id) DO UPDATE SET role = 'admin', ativo = true;
+  END IF;
+END $$;
+
